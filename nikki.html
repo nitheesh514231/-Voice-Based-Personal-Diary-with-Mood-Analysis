@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceMood Diary</title>
+
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #5b21b6;
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --positive: #16a34a;
+      --negative: #dc2626;
+      --neutral: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #172033;
+      --text: #f1f5f9;
+      --muted: #aab5c5;
+      --border: #2d3a50;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      transition: background 0.25s, color 0.25s;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .auth-wrapper {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at top right, rgba(124, 58, 237, 0.22), transparent 35%),
+        var(--bg);
+    }
+
+    .auth-card {
+      width: min(440px, 100%);
+      background: var(--card);
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      color: var(--primary);
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .auth-card h1 {
+      margin: 12px 0 8px;
+      font-size: 29px;
+    }
+
+    .auth-card p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .demo-box {
+      margin: 20px 0;
+      padding: 13px;
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      border-radius: 12px;
+      background: rgba(124, 58, 237, 0.09);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 13px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.13);
+    }
+
+    .btn {
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .btn-primary {
+      color: white;
+      background: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      color: #273449;
+      background: #e8edf5;
+    }
+
+    body.dark .btn-secondary {
+      color: #e5e7eb;
+      background: #29364d;
+    }
+
+    .btn-danger {
+      color: white;
+      background: var(--danger);
+    }
+
+    .btn-success {
+      color: white;
+      background: var(--positive);
+    }
+
+    .btn-warning {
+      color: white;
+      background: #d97706;
+    }
+
+    .message {
+      min-height: 22px;
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .success {
+      color: var(--positive);
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      min-height: 72px;
+      padding: 14px 28px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .user-badge {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 72px);
+    }
+
+    .sidebar {
+      padding: 24px 15px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 13px 15px;
+      text-align: left;
+      color: var(--muted);
+      background: transparent;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      color: var(--primary);
+      background: rgba(124, 58, 237, 0.12);
+    }
+
+    .content {
+      width: 100%;
+      max-width: 1500px;
+      margin: auto;
+      padding: 28px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin-bottom: 7px;
+      font-size: 30px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card,
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card {
+      padding: 19px;
+    }
+
+    .stat-label {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      margin-bottom: 20px;
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin-bottom: 7px;
+      font-size: 20px;
+    }
+
+    .card-subtitle {
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .record-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .record-dot {
+      width: 10px;
+      height: 10px;
+      background: #94a3b8;
+      border-radius: 50%;
+    }
+
+    .record-dot.active {
+      background: var(--danger);
+      animation: pulse 1.1s infinite;
+    }
+
+    @keyframes pulse {
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .result-box {
+      min-height: 210px;
+      padding: 16px;
+      background: rgba(127, 127, 127, 0.04);
+      border: 1px dashed var(--border);
+      border-radius: 13px;
+    }
+
+    .empty-state {
+      padding: 60px 15px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .result-item {
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .result-item small {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    .result-item strong {
+      font-size: 17px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge-positive {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .badge-negative {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .badge-neutral {
+      color: #92400e;
+      background: #fef3c7;
+    }
+
+    .badge-info {
+      color: #1d4ed8;
+      background: #dbeafe;
+    }
+
+    body.dark .badge-positive {
+      color: #bbf7d0;
+      background: #14532d;
+    }
+
+    body.dark .badge-negative {
+      color: #fecaca;
+      background: #7f1d1d;
+    }
+
+    body.dark .badge-neutral {
+      color: #fde68a;
+      background: #78350f;
+    }
+
+    body.dark .badge-info {
+      color: #bfdbfe;
+      background: #1e3a8a;
+    }
+
+    .mood-chart {
+      display: grid;
+      gap: 14px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 45px;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .bar {
+      height: 12px;
+      overflow: hidden;
+      background: var(--border);
+      border-radius: 999px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .history-toolbar {
+      display: grid;
+      grid-template-columns: 1fr 180px auto;
+      gap: 10px;
+      margin-bottom: 17px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .history-item {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .diary-text {
+      margin-bottom: 11px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .history-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .footer-note {
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 1050px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 15px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 12px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-btn {
+        width: auto;
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      .content {
+        padding: 18px 14px;
+      }
+
+      .page-header {
+        flex-direction: column;
+      }
+
+      .history-toolbar,
+      .profile-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 470px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- LOGIN PAGE -->
+  <section id="loginPage" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="brand">VoiceMood</div>
+      <h1>Personal Voice Diary</h1>
+      <p>
+        Speak or type your diary entry and analyze your mood using NLP techniques.
+      </p>
+
+      <div class="demo-box">
+        <strong>Demo login</strong><br />
+        Email: demo@diary.com<br />
+        Password: Diary@123
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email address</label>
+          <input
+            id="loginEmail"
+            type="email"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input
+            id="loginPassword"
+            type="password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        <button class="btn btn-primary" type="submit" style="width: 100%;">
+          Login
+        </button>
+
+        <div id="loginMessage" class="message"></div>
+      </form>
+
+      <div class="footer-note">
+        This is an educational browser-only prototype.
+      </div>
+    </div>
+  </section>
+
+  <!-- APPLICATION -->
+  <section id="appPage" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">VoiceMood</div>
+        <div class="topbar-title">Personal Voice Diary</div>
+      </div>
+
+      <div class="topbar-right">
+        <span id="userBadge" class="user-badge"></span>
+        <button id="themeBtn" class="btn btn-secondary">🌙 Dark</button>
+        <button id="logoutBtn" class="btn btn-danger">Logout</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <button class="nav-btn active" data-section="dashboardSection">
+          📊 Dashboard
+        </button>
+
+        <button class="nav-btn" data-section="diarySection">
+          🎙 New Entry
+        </button>
+
+        <button class="nav-btn" data-section="historySection">
+          📖 Diary History
+        </button>
+
+        <button class="nav-btn" data-section="profileSection">
+          👤 Profile
+        </button>
+      </aside>
+
+      <main class="content">
+        <!-- DASHBOARD -->
+        <section id="dashboardSection" class="app-section">
+          <div class="page-header">
+            <div>
+              <h1>Mood Dashboard</h1>
+              <p>Understand your diary mood patterns over time.</p>
+            </div>
+
+            <button id="newEntryBtn" class="btn btn-primary">
+              Add Diary Entry
+            </button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">TOTAL ENTRIES</div>
+              <div id="totalEntries" class="stat-value">0</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">POSITIVE</div>
+              <div id="positiveEntries" class="stat-value" style="color: var(--positive);">
+                0
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">NEGATIVE</div>
+              <div id="negativeEntries" class="stat-value" style="color: var(--negative);">
+                0
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">NEUTRAL</div>
+              <div id="neutralEntries" class="stat-value" style="color: var(--neutral);">
+                0
+              </div>
+            </div>
+          </div>
+
+          <div class="main-grid">
+            <div class="card">
+              <h2>Mood distribution</h2>
+              <p class="card-subtitle">
+                Sentiment distribution across your diary entries.
+              </p>
+
+              <div class="mood-chart">
+                <div class="bar-row">
+                  <span>Positive</span>
+                  <div class="bar">
+                    <div
+                      id="positiveBar"
+                      class="bar-fill"
+                      style="width: 0%; background: var(--positive);"
+                    ></div>
+                  </div>
+                  <strong id="positivePercent">0%</strong>
+                </div>
+
+                <div class="bar-row">
+                  <span>Negative</span>
+                  <div class="bar">
+                    <div
+                      id="negativeBar"
+                      class="bar-fill"
+                      style="width: 0%; background: var(--negative);"
+                    ></div>
+                  </div>
+                  <strong id="negativePercent">0%</strong>
+                </div>
+
+                <div class="bar-row">
+                  <span>Neutral</span>
+                  <div class="bar">
+                    <div
+                      id="neutralBar"
+                      class="bar-fill"
+                      style="width: 0%; background: var(--neutral);"
+                    ></div>
+                  </div>
+                  <strong id="neutralPercent">0%</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Latest diary entry</h2>
+              <p class="card-subtitle">
+                Your most recently analyzed personal entry.
+              </p>
+
+              <div id="latestEntry">
+                <div class="empty-state">No diary entry has been created yet.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- NEW DIARY ENTRY -->
+        <section id="diarySection" class="app-section hidden">
+          <div class="page-header">
+            <div>
+              <h1>New Diary Entry</h1>
+              <p>
+                Speak about your day or type a diary entry manually.
+              </p>
+            </div>
+          </div>
+
+          <div class="main-grid">
+            <div class="card">
+              <h2>Write or speak</h2>
+              <p class="card-subtitle">
+                Example: “Today I completed my project and I feel very happy.”
+              </p>
+
+              <div class="form-group">
+                <label for="speechLanguage">Speech language</label>
+                <select id="speechLanguage">
+                  <option value="en-IN">English - India</option>
+                  <option value="en-US">English - United States</option>
+                  <option value="ta-IN">Tamil - India</option>
+                  <option value="hi-IN">Hindi - India</option>
+                  <option value="te-IN">Telugu - India</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="diaryText">Diary content</label>
+                <textarea
+                  id="diaryText"
+                  placeholder="Type your thoughts here or click Start Speaking..."
+                ></textarea>
+              </div>
+
+              <div class="button-row">
+                <button id="startBtn" class="btn btn-primary">
+                  🎙 Start Speaking
+                </button>
+
+                <button id="stopBtn" class="btn btn-danger" disabled>
+                  ⏹ Stop
+                </button>
+
+                <button id="clearBtn" class="btn btn-secondary">
+                  Clear
+                </button>
+
+                <button id="sampleBtn" class="btn btn-secondary">
+                  Use Sample
+                </button>
+              </div>
+
+              <div class="record-status">
+                <span id="recordDot" class="record-dot"></span>
+                <span id="recordStatus">Microphone is ready.</span>
+              </div>
+
+              <div class="button-row">
+                <button id="analyzeBtn" class="btn btn-success">
+                  Analyze Mood
+                </button>
+              </div>
+
+              <div id="diaryMessage" class="message"></div>
+            </div>
+
+            <div class="card">
+              <h2>Mood analysis</h2>
+              <p class="card-subtitle">
+                NLP result for your diary entry.
+              </p>
+
+              <div id="analysisResult" class="result-box">
+                <div class="empty-state">
+                  Your mood, emotion, keywords, and topic will appear here.
+                </div>
+              </div>
+
+              <div class="button-row">
+                <button id="readBtn" class="btn btn-secondary" disabled>
+                  🔊 Read Entry
+                </button>
+
+                <button id="copyBtn" class="btn btn-secondary" disabled>
+                  📋 Copy Entry
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="historySection" class="app-section hidden">
+          <div class="page-header">
+            <div>
+              <h1>Diary History</h1>
+              <p>Search and review your previous mood analyses.</p>
+            </div>
+
+            <button id="exportBtn" class="btn btn-primary">
+              Export CSV
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="history-toolbar">
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Search diary entries, moods, or keywords..."
+              />
+
+              <select id="moodFilter">
+                <option value="all">All moods</option>
+                <option value="positive">Positive</option>
+                <option value="negative">Negative</option>
+                <option value="neutral">Neutral</option>
+              </select>
+
+              <button id="clearHistoryBtn" class="btn btn-danger">
+                Clear History
+              </button>
+            </div>
+
+            <div id="historyList" class="history-list"></div>
+          </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section id="profileSection" class="app-section hidden">
+          <div class="page-header">
+            <div>
+              <h1>Profile and Security</h1>
+              <p>Manage your profile and change your demo password.</p>
+            </div>
+          </div>
+
+          <div class="main-grid">
+            <div class="card">
+              <h2>Profile information</h2>
+              <p class="card-subtitle">
+                These details are stored in this browser only.
+              </p>
+
+              <div class="profile-grid">
+                <div class="form-group">
+                  <label for="profileName">Name</label>
+                  <input id="profileName" type="text" />
+                </div>
+
+                <div class="form-group">
+                  <label for="profileEmail">Email</label>
+                  <input id="profileEmail" type="email" readonly />
+                </div>
+              </div>
+
+              <button id="saveProfileBtn" class="btn btn-primary">
+                Save Profile
+              </button>
+
+              <div id="profileMessage" class="message"></div>
+            </div>
+
+            <div class="card">
+              <h2>Change password</h2>
+              <p class="card-subtitle">
+                Use at least six characters.
+              </p>
+
+              <form id="passwordForm">
+                <div class="form-group">
+                  <label for="currentPassword">Current password</label>
+                  <input id="currentPassword" type="password" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="newPassword">New password</label>
+                  <input id="newPassword" type="password" minlength="6" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="confirmPassword">Confirm new password</label>
+                  <input id="confirmPassword" type="password" minlength="6" required />
+                </div>
+
+                <button class="btn btn-warning" type="submit">
+                  Change Password
+                </button>
+
+                <div id="passwordMessage" class="message"></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Privacy and security note</h2>
+            <p class="note">
+              This is an educational front-end project. Diary entries and the demo
+              password are stored in localStorage. Do not use it for confidential
+              personal information. A real application should use a secure backend,
+              password hashing, HTTPS, authentication sessions, and database access
+              controls.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <script>
+    "use strict";
+
+    const KEYS = {
+      user: "voice_diary_user_v1",
+      session: "voice_diary_session_v1",
+      theme: "voice_diary_theme_v1",
+      entries: "voice_diary_entries_v1"
+    };
+
+    const DEFAULT_USER = {
+      name: "Demo User",
+      email: "demo@diary.com",
+      password: "Diary@123"
+    };
+
+    let currentUser = null;
+    let recognition = null;
+    let recognizing = false;
+    let latestText = "";
+
+    const $ = (id) => document.getElementById(id);
+
+    function readJSON(key, fallback) {
+      try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function writeJSON(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function getUser() {
+      const saved = readJSON(KEYS.user, null);
+
+      if (!saved) {
+        writeJSON(KEYS.user, DEFAULT_USER);
+        return { ...DEFAULT_USER };
+      }
+
+      return saved;
+    }
+
+    function getEntries() {
+      return readJSON(KEYS.entries, []);
+    }
+
+    function setEntries(entries) {
+      writeJSON(KEYS.entries, entries);
+    }
+
+    function showMessage(id, text, type) {
+      const element = $(id);
+      element.textContent = text;
+      element.className = `message ${type}`;
+    }
+
+    function clearMessage(id) {
+      $(id).textContent = "";
+      $(id).className = "message";
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDate(date) {
+      return new Date(date).toLocaleString();
+    }
+
+    function applyTheme() {
+      const theme = localStorage.getItem(KEYS.theme) || "light";
+      document.body.classList.toggle("dark", theme === "dark");
+      $("themeBtn").textContent =
+        theme === "dark" ? "☀️ Light" : "🌙 Dark";
+    }
+
+    function toggleTheme() {
+      const dark = document.body.classList.contains("dark");
+      localStorage.setItem(KEYS.theme, dark ? "light" : "dark");
+      applyTheme();
+    }
+
+    function showLogin() {
+      $("loginPage").classList.remove("hidden");
+      $("appPage").classList.add("hidden");
+    }
+
+    function showApp() {
+      $("loginPage").classList.add("hidden");
+      $("appPage").classList.remove("hidden");
+
+      currentUser = getUser();
+      $("userBadge").textContent =
+        `${currentUser.name} • ${currentUser.email}`;
+
+      loadProfile();
+      updateDashboard();
+      renderHistory();
+      applyTheme();
+    }
+
+    function login(email, password) {
+      const user = getUser();
+
+      if (
+        email.trim().toLowerCase() === user.email.toLowerCase() &&
+        password === user.password
+      ) {
+        currentUser = user;
+        localStorage.setItem(KEYS.session, user.email);
+        showApp();
+        return true;
+      }
+
+      return false;
+    }
+
+    function logout() {
+      localStorage.removeItem(KEYS.session);
+      currentUser = null;
+      showLogin();
+    }
+
+    function setupSpeechRecognition() {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        $("startBtn").disabled = true;
+        $("recordStatus").textContent =
+          "Speech recognition is unavailable. Please type your entry manually.";
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = $("speechLanguage").value;
+
+      recognition.onstart = () => {
+        recognizing = true;
+        $("startBtn").disabled = true;
+        $("stopBtn").disabled = false;
+        $("recordDot").classList.add("active");
+        $("recordStatus").textContent = "Listening... speak now.";
+      };
+
+      recognition.onresult = (event) => {
+        let finalText = "";
+        let interimText = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+
+          if (event.results[i].isFinal) {
+            finalText += transcript + " ";
+          } else {
+            interimText += transcript;
+          }
+        }
+
+        const currentText = $("diaryText").value
+          .replace(/\s*\[speaking\]/gi, "")
+          .trim();
+
+        if (finalText) {
+          $("diaryText").value =
+            `${currentText} ${finalText}`.trim();
+        }
+
+        if (interimText) {
+          $("diaryText").value =
+            `${currentText} ${interimText} [speaking]`.trim();
+        }
+      };
+
+      recognition.onerror = (event) => {
+        recognizing = false;
+        $("startBtn").disabled = false;
+        $("stopBtn").disabled = true;
+        $("recordDot").classList.remove("active");
+        $("recordStatus").textContent = `Speech error: ${event.error}`;
+      };
+
+      recognition.onend = () => {
+        recognizing = false;
+        $("startBtn").disabled = false;
+        $("stopBtn").disabled = true;
+        $("recordDot").classList.remove("active");
+
+        $("diaryText").value = $("diaryText").value
+          .replace(/\s*\[speaking\]/gi, "")
+          .trim();
+
+        if (!$("recordStatus").textContent.startsWith("Speech error")) {
+          $("recordStatus").textContent = "Microphone is ready.";
+        }
+      };
+    }
+
+    function startSpeech() {
+      if (!recognition) {
+        showMessage(
+          "diaryMessage",
+          "Speech recognition is not supported. Type your diary entry manually.",
+          "error"
+        );
+        return;
+      }
+
+      recognition.lang = $("speechLanguage").value;
+
+      try {
+        recognition.start();
+      } catch {
+        showMessage(
+          "diaryMessage",
+          "Speech recognition is already running.",
+          "error"
+        );
+      }
+    }
+
+    function stopSpeech() {
+      if (recognition && recognizing) {
+        recognition.stop();
+      }
+    }
+
+    function tokenize(text) {
+      return text
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    function getSentiment(text) {
+      const positiveWords = [
+        "happy", "glad", "joy", "joyful", "excited", "good", "great",
+        "excellent", "amazing", "love", "loved", "enjoy", "enjoyed",
+        "success", "successful", "completed", "calm", "peaceful",
+        "proud", "thankful", "grateful", "wonderful", "nice", "fun"
+      ];
+
+      const negativeWords = [
+        "sad", "unhappy", "angry", "bad", "terrible", "worst", "hate",
+        "hated", "stress", "stressed", "worried", "anxious", "fear",
+        "afraid", "lonely", "tired", "difficult", "problem", "failure",
+        "failed", "disappointed", "upset", "pain", "confused"
+      ];
+
+      const lower = text.toLowerCase();
+      let score = 0;
+
+      positiveWords.forEach((word) => {
+        if (lower.includes(word)) score++;
+      });
+
+      negativeWords.forEach((word) => {
+        if (lower.includes(word)) score--;
+      });
+
+      let sentiment = "Neutral";
+
+      if (score > 0) sentiment = "Positive";
+      if (score < 0) sentiment = "Negative";
+
+      return {
+        sentiment,
+        score,
+        confidence: Math.min(98, 55 + Math.abs(score) * 10)
+      };
+    }
+
+    function detectEmotion(text, sentiment) {
+      const lower = text.toLowerCase();
+
+      if (/(happy|joy|joyful|excited|wonderful|amazing)/.test(lower)) {
+        return "Happy";
+      }
+
+      if (/(angry|hate|hated|terrible|frustrated)/.test(lower)) {
+        return "Angry";
+      }
+
+      if (/(sad|unhappy|lonely|disappointed|upset)/.test(lower)) {
+        return "Sad";
+      }
+
+      if (/(stress|stressed|worried|anxious|fear|afraid)/.test(lower)) {
+        return "Anxious";
+      }
+
+      if (/(tired|exhausted|sleepy)/.test(lower)) {
+        return "Tired";
+      }
+
+      if (sentiment === "Positive") return "Content";
+      if (sentiment === "Negative") return "Concerned";
+
+      return "Neutral";
+    }
+
+    function detectTopic(text) {
+      const lower = text.toLowerCase();
+
+      const topicMap = {
+        Studies: [
+          "study", "studies", "class", "college", "school", "exam",
+          "assignment", "project", "teacher", "lesson"
+        ],
+        Work: [
+          "work", "office", "job", "meeting", "client", "project",
+          "manager", "task", "career"
+        ],
+        Family: [
+          "family", "mother", "father", "brother", "sister",
+          "parents", "home"
+        ],
+        Health: [
+          "health", "exercise", "gym", "sleep", "doctor", "food",
+          "walk", "tired"
+        ],
+        Friends: [
+          "friend", "friends", "party", "talk", "team", "group"
+        ],
+        Personal: [
+          "goal", "habit", "future", "life", "dream", "decision"
+        ]
+      };
+
+      let bestTopic = "General";
+      let bestCount = 0;
+
+      Object.entries(topicMap).forEach(([topic, words]) => {
+        const count = words.filter((word) => lower.includes(word)).length;
+
+        if (count > bestCount) {
+          bestCount = count;
+          bestTopic = topic;
+        }
+      });
+
+      return bestTopic;
+    }
+
+    function extractKeywords(text) {
+      const stopwords = new Set([
+        "the", "and", "was", "were", "are", "is", "to", "of", "in",
+        "on", "for", "a", "an", "it", "this", "that", "with", "but",
+        "very", "too", "i", "we", "our", "my", "they", "have", "has",
+        "had", "from", "be", "as", "at", "or", "not", "today",
+        "yesterday", "tomorrow"
+      ]);
+
+      const count = {};
+
+      tokenize(text).forEach((word) => {
+        if (word.length >= 4 && !stopwords.has(word)) {
+          count[word] = (count[word] || 0) + 1;
+        }
+      });
+
+      return Object.entries(count)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 7)
+        .map(([word]) => word);
+    }
+
+    function analyzeDiary(text) {
+      const sentimentResult = getSentiment(text);
+
+      return {
+        sentiment: sentimentResult.sentiment,
+        score: sentimentResult.score,
+        confidence: sentimentResult.confidence,
+        emotion: detectEmotion(text, sentimentResult.sentiment),
+        topic: detectTopic(text),
+        keywords: extractKeywords(text)
+      };
+    }
+
+    function getBadgeClass(sentiment) {
+      if (sentiment === "Positive") return "badge-positive";
+      if (sentiment === "Negative") return "badge-negative";
+      return "badge-neutral";
+    }
+
+    function renderResult(entry) {
+      const keywordHTML = entry.keywords.length
+        ? entry.keywords
+            .map(
+              (keyword) =>
+                `<span class="badge badge-info">${escapeHTML(keyword)}</span>`
+            )
+            .join(" ")
+        : "No important keywords found.";
+
+      $("analysisResult").innerHTML = `
+        <div>
+          <span class="badge ${getBadgeClass(entry.sentiment)}">
+            ${escapeHTML(entry.sentiment)}
+          </span>
+
+          <span class="badge badge-info">
+            ${escapeHTML(entry.emotion)}
+          </span>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-item">
+            <small>Sentiment score</small>
+            <strong>${entry.score}</strong>
+          </div>
+
+          <div class="result-item">
+            <small>Confidence</small>
+            <strong>${entry.confidence}%</strong>
+          </div>
+
+          <div class="result-item">
+            <small>Main topic</small>
+            <strong>${escapeHTML(entry.topic)}</strong>
+          </div>
+
+          <div class="result-item">
+            <small>Word count</small>
+            <strong>${tokenize(entry.text).length}</strong>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <small style="display: block; margin-bottom: 8px; color: var(--muted);">
+            Extracted keywords
+          </small>
+          ${keywordHTML}
+        </div>
+      `;
+
+      $("readBtn").disabled = false;
+      $("copyBtn").disabled = false;
+      latestText = entry.text;
+    }
+
+    function analyzeAndSave() {
+      const text = $("diaryText").value
+        .replace(/\s*\[speaking\]/gi, "")
+        .trim();
+
+      if (!text) {
+        showMessage(
+          "diaryMessage",
+          "Please type or speak a diary entry first.",
+          "error"
+        );
+        return;
+      }
+
+      if (text.length < 8) {
+        showMessage(
+          "diaryMessage",
+          "Please enter a longer diary entry.",
+          "error"
+        );
+        return;
+      }
+
+      const analysis = analyzeDiary(text);
+
+      const entry = {
+        id: Date.now(),
+        text,
+        ...analysis,
+        createdAt: new Date().toISOString(),
+        userEmail: currentUser.email
+      };
+
+      const entries = getEntries();
+      entries.unshift(entry);
+      setEntries(entries);
+
+      renderResult(entry);
+      updateDashboard();
+      renderHistory();
+
+      showMessage(
+        "diaryMessage",
+        "Diary entry analyzed and saved successfully.",
+        "success"
+      );
+    }
+
+    function updateDashboard() {
+      const entries = getEntries().filter(
+        (entry) => entry.userEmail === currentUser?.email
+      );
+
+      const total = entries.length;
+      const positive = entries.filter(
+        (entry) => entry.sentiment === "Positive"
+      ).length;
+      const negative = entries.filter(
+        (entry) => entry.sentiment === "Negative"
+      ).length;
+      const neutral = entries.filter(
+        (entry) => entry.sentiment === "Neutral"
+      ).length;
+
+      $("totalEntries").textContent = total;
+      $("positiveEntries").textContent = positive;
+      $("negativeEntries").textContent = negative;
+      $("neutralEntries").textContent = neutral;
+
+      const percentage = (value) =>
+        total ? Math.round((value / total) * 100) : 0;
+
+      const positivePercent = percentage(positive);
+      const negativePercent = percentage(negative);
+      const neutralPercent = percentage(neutral);
+
+      $("positiveBar").style.width = `${positivePercent}%`;
+      $("negativeBar").style.width = `${negativePercent}%`;
+      $("neutralBar").style.width = `${neutralPercent}%`;
+
+      $("positivePercent").textContent = `${positivePercent}%`;
+      $("negativePercent").textContent = `${negativePercent}%`;
+      $("neutralPercent").textContent = `${neutralPercent}%`;
+
+      if (entries.length) {
+        renderLatestEntry(entries[0]);
+      } else {
+        $("latestEntry").innerHTML =
+          `<div class="empty-state">No diary entry has been created yet.</div>`;
+      }
+    }
+
+    function renderLatestEntry(entry) {
+      $("latestEntry").innerHTML = `
+        <span class="badge ${getBadgeClass(entry.sentiment)}">
+          ${escapeHTML(entry.sentiment)}
+        </span>
+
+        <span class="badge badge-info">
+          ${escapeHTML(entry.emotion)}
+        </span>
+
+        <p style="margin: 14px 0; line-height: 1.6;">
+          ${escapeHTML(entry.text)}
+        </p>
+
+        <div class="history-meta">
+          <span>Topic: ${escapeHTML(entry.topic)}</span>
+          <span>Confidence: ${entry.confidence}%</span>
+          <span>${formatDate(entry.createdAt)}</span>
+        </div>
+      `;
+    }
+
+    function renderHistory() {
+      const list = $("historyList");
+      const search = $("searchInput").value.trim().toLowerCase();
+      const filter = $("moodFilter").value;
+
+      let entries = getEntries().filter(
+        (entry) => entry.userEmail === currentUser?.email
+      );
+
+      if (filter !== "all") {
+        entries = entries.filter(
+          (entry) => entry.sentiment.toLowerCase() === filter
+        );
+      }
+
+      if (search) {
+        entries = entries.filter((entry) => {
+          const searchable = [
+            entry.text,
+            entry.sentiment,
+            entry.emotion,
+            entry.topic,
+            ...(entry.keywords || [])
+          ]
+            .join(" ")
+            .toLowerCase();
+
+          return searchable.includes(search);
+        });
+      }
+
+      if (!entries.length) {
+        list.innerHTML =
+          `<div class="empty-state">No diary entries found.</div>`;
+        return;
+      }
+
+      list.innerHTML = entries
+        .map(
+          (entry) => `
+            <article class="history-item">
+              <div class="history-head">
+                <div>
+                  <span class="badge ${getBadgeClass(entry.sentiment)}">
+                    ${escapeHTML(entry.sentiment)}
+                  </span>
+
+                  <span class="badge badge-info">
+                    ${escapeHTML(entry.emotion)}
+                  </span>
+                </div>
+
+                <button
+                  class="btn btn-danger delete-entry"
+                  data-id="${entry.id}"
+                >
+                  Delete
+                </button>
+              </div>
+
+              <div class="diary-text">${escapeHTML(entry.text)}</div>
+
+              <div class="history-meta">
+                <span>Topic: ${escapeHTML(entry.topic)}</span>
+                <span>Score: ${entry.score}</span>
+                <span>Confidence: ${entry.confidence}%</span>
+                <span>
+                  Keywords: ${escapeHTML(
+                    (entry.keywords || []).join(", ") || "None"
+                  )}
+                </span>
+                <span>${formatDate(entry.createdAt)}</span>
+              </div>
+            </article>
+          `
+        )
+        .join("");
+
+      document.querySelectorAll(".delete-entry").forEach((button) => {
+        button.addEventListener("click", () => {
+          deleteEntry(Number(button.dataset.id));
+        });
+      });
+    }
+
+    function deleteEntry(id) {
+      const remaining = getEntries().filter((entry) => entry.id !== id);
+      setEntries(remaining);
+      updateDashboard();
+      renderHistory();
+    }
+
+    function clearHistory() {
+      const entries = getEntries().filter(
+        (entry) => entry.userEmail === currentUser.email
+      );
+
+      if (!entries.length) return;
+
+      if (!confirm("Delete all your diary entries?")) return;
+
+      const remaining = getEntries().filter(
+        (entry) => entry.userEmail !== currentUser.email
+      );
+
+      setEntries(remaining);
+      updateDashboard();
+      renderHistory();
+    }
+
+    function exportCSV() {
+      const entries = getEntries().filter(
+        (entry) => entry.userEmail === currentUser.email
+      );
+
+      if (!entries.length) {
+        alert("There are no diary entries to export.");
+        return;
+      }
+
+      const headers = [
+        "Date",
+        "Diary Entry",
+        "Sentiment",
+        "Score",
+        "Confidence",
+        "Emotion",
+        "Topic",
+        "Keywords"
+      ];
+
+      const rows = entries.map((entry) => [
+        formatDate(entry.createdAt),
+        entry.text,
+        entry.sentiment,
+        entry.score,
+        `${entry.confidence}%`,
+        entry.emotion,
+        entry.topic,
+        (entry.keywords || []).join(" ")
+      ]);
+
+      const csv = [headers, ...rows]
+        .map((row) =>
+          row
+            .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+            .join(",")
+        )
+        .join("\n");
+
+      const blob = new Blob([csv], {
+        type: "text/csv;charset=utf-8;"
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "voice-diary-mood-analysis.csv";
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function speakText(text) {
+      if (!("speechSynthesis" in window)) {
+        alert("Text-to-speech is not supported in this browser.");
+        return;
+      }
+
+      speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = $("speechLanguage").value;
+      utterance.rate = 0.95;
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function copyText(text) {
+      if (!text) return;
+
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          showMessage(
+            "diaryMessage",
+            "Diary text copied successfully.",
+            "success"
+          );
+        })
+        .catch(() => {
+          showMessage(
+            "diaryMessage",
+            "Unable to copy diary text.",
+            "error"
+          );
+        });
+    }
+
+    function loadProfile() {
+      $("profileName").value = currentUser.name;
+      $("profileEmail").value = currentUser.email;
+    }
+
+    function saveProfile() {
+      const name = $("profileName").value.trim();
+
+      if (!name) {
+        showMessage("profileMessage", "Name cannot be empty.", "error");
+        return;
+      }
+
+      const user = getUser();
+      user.name = name;
+      writeJSON(KEYS.user, user);
+
+      currentUser = user;
+      $("userBadge").textContent =
+        `${currentUser.name} • ${currentUser.email}`;
+
+      showMessage(
+        "profileMessage",
+        "Profile updated successfully.",
+        "success"
+      );
+    }
+
+    function changePassword(event) {
+      event.preventDefault();
+
+      const currentPassword = $("currentPassword").value;
+      const newPassword = $("newPassword").value;
+      const confirmPassword = $("confirmPassword").value;
+
+      const user = getUser();
+
+      if (currentPassword !== user.password) {
+        showMessage(
+          "passwordMessage",
+          "Current password is incorrect.",
+          "error"
+        );
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        showMessage(
+          "passwordMessage",
+          "New password must have at least six characters.",
+          "error"
+        );
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        showMessage(
+          "passwordMessage",
+          "New passwords do not match.",
+          "error"
+        );
+        return;
+      }
+
+      user.password = newPassword;
+      writeJSON(KEYS.user, user);
+
+      $("passwordForm").reset();
+
+      showMessage(
+        "passwordMessage",
+        "Password changed successfully.",
+        "success"
+      );
+    }
+
+    function showSection(sectionId) {
+      document.querySelectorAll(".app-section").forEach((section) => {
+        section.classList.toggle(
+          "hidden",
+          section.id !== sectionId
+        );
+      });
+
+      document.querySelectorAll(".nav-btn").forEach((button) => {
+        button.classList.toggle(
+          "active",
+          button.dataset.section === sectionId
+        );
+      });
+
+      if (sectionId === "dashboardSection") {
+        updateDashboard();
+      }
+
+      if (sectionId === "historySection") {
+        renderHistory();
+      }
+    }
+
+    function setupEvents() {
+      $("loginForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const email = $("loginEmail").value;
+        const password = $("loginPassword").value;
+
+        if (login(email, password)) {
+          clearMessage("loginMessage");
+        } else {
+          showMessage(
+            "loginMessage",
+            "Invalid email or password.",
+            "error"
+          );
+        }
+      });
+
+      $("logoutBtn").addEventListener("click", logout);
+      $("themeBtn").addEventListener("click", toggleTheme);
+
+      document.querySelectorAll(".nav-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          showSection(button.dataset.section);
+        });
+      });
+
+      $("newEntryBtn").addEventListener("click", () => {
+        showSection("diarySection");
+        $("diaryText").focus();
+      });
+
+      $("startBtn").addEventListener("click", startSpeech);
+      $("stopBtn").addEventListener("click", stopSpeech);
+
+      $("speechLanguage").addEventListener("change", () => {
+        if (recognition) {
+          recognition.lang = $("speechLanguage").value;
+        }
+      });
+
+      $("clearBtn").addEventListener("click", () => {
+        $("diaryText").value = "";
+        clearMessage("diaryMessage");
+      });
+
+      $("sampleBtn").addEventListener("click", () => {
+        $("diaryText").value =
+          "Today I completed my NLP project. I felt happy and proud because the work was successful, although I was tired in the evening.";
+      });
+
+      $("analyzeBtn").addEventListener("click", analyzeAndSave);
+
+      $("readBtn").addEventListener("click", () => {
+        if (latestText) speakText(latestText);
+      });
+
+      $("copyBtn").addEventListener("click", () => {
+        copyText(latestText);
+      });
+
+      $("searchInput").addEventListener("input", renderHistory);
+      $("moodFilter").addEventListener("change", renderHistory);
+      $("clearHistoryBtn").addEventListener("click", clearHistory);
+      $("exportBtn").addEventListener("click", exportCSV);
+
+      $("saveProfileBtn").addEventListener("click", saveProfile);
+      $("passwordForm").addEventListener("submit", changePassword);
+    }
+
+    function initialize() {
+      getUser();
+      setupEvents();
+      setupSpeechRecognition();
+      applyTheme();
+
+      const savedSession = localStorage.getItem(KEYS.session);
+      const savedUser = getUser();
+
+      if (savedSession === savedUser.email) {
+        currentUser = savedUser;
+        showApp();
+      } else {
+        showLogin();
+      }
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
